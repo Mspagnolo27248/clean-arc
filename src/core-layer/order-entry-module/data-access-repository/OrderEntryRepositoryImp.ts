@@ -7,7 +7,7 @@ import {
   OrderDetailDTO,
   OrderHeaderDTO,
 } from "../data-transfer-objects/order-entry-dtos";
-import { AppError } from "../domain-entities/AppError";
+import { AppError } from "../../general/AppError";
 import { Order } from "../domain-entities/OrderEntity";
 import { OrderRepository } from "./OrderEntryRepository";
 

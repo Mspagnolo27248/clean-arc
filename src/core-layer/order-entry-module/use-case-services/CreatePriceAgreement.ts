@@ -1,7 +1,7 @@
 import { DtoMapper } from "../../general/DtoMapper";
 import { PricingRepository } from "../data-access-repository/PricingRepository";
 import { PriceAgreementDto } from "../data-transfer-objects/price-records-dtos";
-import { AppError } from "../domain-entities/AppError";
+import { AppError } from "../../general/AppError";
 import { PriceAgreement } from "../domain-entities/PriceAgreement";
 
 export class CreatePriceAgreementUseCase {
