@@ -77,9 +77,7 @@ export class RackPriceController {
     }
   }
 
-  static upsertRecords(req:Request,res:Response){
-    pricingRepository.testUpsert()
-  }
+
 
 }
 

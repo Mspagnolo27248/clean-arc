@@ -3,17 +3,17 @@ import { PricingRepositoryImp } from "./core-layer/order-entry-module/data-acces
 
 const pricingRepository = new PricingRepositoryImp();
 
-const data = pricingRepository.testUpsert(
+const data = async ()=> await pricingRepository.createRackPrice(
     {
         
             companyNumber: 10,
             location: '001',
-            productCode: '102V',
+            productCode: '4319',
             containerCode: '283',
             unitOfMeasure: 'GAL',
             effectiveDate: '20230330',
             effectiveTime: 1,
-            price: 0,
+            price: 3.99,
             priceTier1: '0.0000',
             priceTier2: '0.0000',
             priceTier3: '0.0000',
@@ -29,5 +29,4 @@ const data = pricingRepository.testUpsert(
           
     }
 );
-
-console.log(data)
+data().then(result=>console.log(result));

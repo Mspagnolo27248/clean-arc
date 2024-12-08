@@ -18,7 +18,7 @@ export class ORM {
   }
 
 
-  static insert<T extends Record<string, any>>(this: typeof ORM,instance: T ): string {
+  static async insert<T extends Record<string, any>>(this: typeof ORM,instance: T ): Promise<any> {
     const tableName = Reflect.get(this, "tableName");
     const defaultModel = new this();
     const target = updateTargetValuesFromSource(defaultModel, instance);
@@ -42,8 +42,29 @@ export class ORM {
         return typeof value === "string" ? `'${value}'` : value;
       });
     const valuesString = fieldValues.join(", ");
+    
+      //Sqlite Operations
+    const sql =  `INSERT INTO ${tableName} (${tableFields}) VALUES (${valuesString})`;
+    try{
+      const db = await initializeDb();
+      const result = await db.run(sql);
+      await db.close();
+      if(result.lastID){
+        return instance
+      }
+      else{
+        throw new Error("Error executing SQL")
+      }
+      
 
-    return `INSERT INTO ${tableName} (${tableFields}) VALUES (${valuesString})`;
+    }catch(error){
+      if(error instanceof Error)
+      throw new Error(error.message)
+     else{
+      throw new Error("Error executing SQL")
+    }
+  }
+ 
   }
 
 
@@ -151,10 +172,31 @@ export class ORM {
     return record;
   }
 
-   private static mergeObjects<T extends Object,U extends Object>(object1:T, object2:U){
-    return Object.assign(object1, object2)
-  }
 
+
+  static insertSql<T extends Record<string, any>>(this: typeof ORM, instance: T): string {
+    const tableName = Reflect.get(this, 'tableName');
+    const defaultModel = new this();
+    const target = updateTargetValuesFromSource(defaultModel, instance);
+    const record = this.mapModelToRecord(target);
+    const propertyMap = this.getModelProperties();
+    const identityFields = Reflect.get(this.prototype, 'identityFields') || [];
+    const identityTableFields = identityFields.map((field: string | number)=>propertyMap[field])
+    
+    
+    const tableFields = Object.keys(record)
+        .filter(field => !identityTableFields.includes(field))  // Exclude identity fields
+        .join(', ');
+    const fieldValues = Object.keys(record)
+        .filter(field => !identityTableFields.includes(field))  // Exclude identity fields
+        .map(key => {
+            const value = record[key];
+            return typeof value === 'string' ? `'${value}'` : value;
+        });
+    
+    const valuesString = fieldValues.join(', ');
+    return `INSERT INTO ${tableName} (${tableFields}) VALUES (${valuesString})`;
+}
 
 }
 

@@ -13,5 +13,5 @@ rackPriceRoutes.put('/:id', async (req: Request, res: Response) => { });
 rackPriceRoutes.delete('/', async (req: Request, res: Response) => { });
 rackPriceRoutes.post('/convert',RackPriceController.convertToGallons);
 rackPriceRoutes.post('/convertAllPrices',RackPriceController.getAllRackPricesConverted);
-rackPriceRoutes.post('/rack-price-upsert',RackPriceController.upsertRecords);
+
 export default rackPriceRoutes;

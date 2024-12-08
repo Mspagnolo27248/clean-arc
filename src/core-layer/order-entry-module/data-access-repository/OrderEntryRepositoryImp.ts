@@ -79,14 +79,14 @@ export class OrderRepositoryImpl implements OrderRepository {
   if(!customerExists)throw new Error(`Customer Does not exist ID:${orderHeader.customerID}`)
     try {         
       await db.exec("BEGIN TRANSACTION");
-      const insertHeaderStatement = OrderHeaderModel.insert(orderHeader);
+      const insertHeaderStatement = OrderHeaderModel.insertSql(orderHeader);
       const headerResult = await db.run(insertHeaderStatement);
       
       if(!headerResult.lastID){
         throw new Error('Error inserting header')
       } 
       orderId = headerResult.lastID;
-      const orderDetailsInsertStatments = orderDetails.map(detail=>OrderDetailModel.insert({...detail,orderID:orderId}))
+      const orderDetailsInsertStatments = orderDetails.map(detail=>OrderDetailModel.insertSql({...detail,orderID:orderId}))
       for (const stmt of orderDetailsInsertStatments) {
         await db.exec(stmt);
       }
