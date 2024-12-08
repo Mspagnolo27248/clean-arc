@@ -9,12 +9,13 @@ export class CreateRackPriceUseCase {
         this.pricingResposity = pricingResposity; 
     }
 
-   public async execute(rackPriceDto: RackPriceDto): Promise<RackPriceDto> {
-    
+   public async execute(rackPriceDto: RackPriceDto): Promise<RackPriceDto> {    
+        //Existance Check Master Data
         const product = await this.pricingResposity.getProductById(rackPriceDto.productCode);
         if (!product) {
             throw new Error('Product not found');
         }
+        
         return this.pricingResposity.createRackPrice( new RackPrice(rackPriceDto));
     }
 }

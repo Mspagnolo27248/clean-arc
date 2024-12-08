@@ -15,8 +15,8 @@ export class OrderRepositoryImpl implements OrderRepository {
   async getAllOrders(): Promise<OrderDTO[]> {
     try {
       const db = await initializeDb();
-      const HeadertableProperties = OrderHeaderModel.getTableColumns();
-      const DetailableProperties = OrderDetailModel.getTableColumns();
+      const HeadertableProperties = OrderHeaderModel.getTableFieldToModelMap();
+      const DetailableProperties = OrderDetailModel.getTableFieldToModelMap();
       const orderHeaders = await db.all("SELECT * FROM OrderHeader");
       const orderDetails = await db.all("SELECT * FROM OrderDetail");
       const orderDetailModels: OrderDetailDTO[] = [];

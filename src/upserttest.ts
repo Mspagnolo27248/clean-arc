@@ -1,9 +1,10 @@
 import { PricingRepositoryImp } from "./core-layer/order-entry-module/data-access-repository/PricingReposityoryImp";
+import { RackPriceModel } from "./shared-common/database/custom-orm/data-models/RackPriceModel";
 
 
 const pricingRepository = new PricingRepositoryImp();
 
-const data = async ()=> await pricingRepository.createRackPrice(
+const data =  RackPriceModel.insertSql(
     {
         
             companyNumber: 10,
@@ -29,4 +30,4 @@ const data = async ()=> await pricingRepository.createRackPrice(
           
     }
 );
-data().then(result=>console.log(result));
+console.log(data);
