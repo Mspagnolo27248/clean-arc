@@ -4,7 +4,7 @@ import { RackPriceModel } from "./shared-common/database/custom-orm/data-models/
 
 const pricingRepository = new PricingRepositoryImp();
 
-const data =  RackPriceModel.insertSql(
+const data =  async ()=> await RackPriceModel.update(
     {
         
             companyNumber: 10,
@@ -14,7 +14,7 @@ const data =  RackPriceModel.insertSql(
             unitOfMeasure: 'GAL',
             effectiveDate: '20230330',
             effectiveTime: 1,
-            price: 3.99,
+            price: 1.99,
             priceTier1: '0.0000',
             priceTier2: '0.0000',
             priceTier3: '0.0000',
@@ -30,4 +30,6 @@ const data =  RackPriceModel.insertSql(
           
     }
 );
-console.log(data);
+
+data().then(d=>console.log(d))
+;

@@ -55,8 +55,23 @@ export class ORM {
     return sql;
   }
 
-  static update<T extends Record<string, any>>(instance: T): string {
-   return this.updateSQL(instance);
+  static async update<T extends Record<string, any>>(instance: T): Promise<T> {
+    const sql = this.updateSQL(instance);
+    try {
+      const db = await initializeDb();
+      const result = await db.run(sql);
+      await db.close();
+      if (result.changes) {
+        return instance;
+      } else {
+        throw new Error("Error executing SQL");
+      }
+    } catch (error) {
+      if (error instanceof Error) throw new Error(error.message);
+      else {
+        throw new Error("Error executing SQL");
+      }
+    }
   }
   
 
@@ -64,28 +79,29 @@ export class ORM {
   private static generateWhereClause<T extends Record<string, any>>(record:T){  
     const criteria: string[] = []; 
     Object.entries(record).forEach(([key,value]) =>
-      criteria.push(`${key}=${value === "" ? "''" : value}`)
+      criteria.push(`${key}=${typeof value === "string" ? `'${value}'` : value}`)
     );
-    const whereParams = criteria.join(", ");
+   
+    const whereParams = criteria.join(" AND ");
     return  `WHERE ${whereParams} `
   }
+  
 
-  static findOne<T extends Record<string,any>>(keys:Partial<T>){
-    const fieldNames = this.getTableFieldToModelMap();
-    const keyFields:string[] = this.getKeyFields();
-    const keyValues = Object.entries(keys).reduce((acc,[key,value])=>{ 
-      if(keyFields.includes(key)){
-        acc.push(value)
-      }
-     return acc;
-  },[] as [string,any][]);
+//   static findOne<T extends Record<string,any>>(keys:Partial<T>){
+//     const fieldNames = this.getTableFieldToModelMap();
+//     const keyFields:string[] = this.getKeyFields();
+//     const keyValues = Object.entries(keys).reduce((acc,[key,value])=>{ 
+//       if(keyFields.includes(key)){
+//         acc.push(value)
+//       }
+//      return acc;
+//   },[] as [string,any][]);
 
-  `SELECT `
-}
+//   `SELECT `
+// }
 
   static upsert<T extends Record<string, any>>(instance: T ): string {
     const keyFields = this.getKeyFields();
-    const record = this.findAll
     let insertStatement = this.insert(instance);
     let updateStatment = this.update(instance);
     let conflictStatment = " ON CONFLICT() DO ";
@@ -177,9 +193,9 @@ export class ORM {
   const keysFromModel = filterModelByProperties(model,keyFields)
   const recordKeys = this.mapModelToRecord(keysFromModel);
   const whereClasue = this.generateWhereClause(recordKeys)
-  const setValues: string[] = Object.keys(record).map(
-  (key) => `${key}=${record[key] === "" ? "''" : record[key]}`
-  );
+  const setValues: string[] = Object.entries(record).map(
+  ([key,value]) => `${key}=${typeof value === "string" ? `'${value}'` : value}`
+  );  
   const setParams = setValues.join(", ");
 
   const sql = `UPDATE ${tableName} SET ${setParams} ${whereClasue}`;
