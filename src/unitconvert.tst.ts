@@ -1,6 +1,6 @@
 
-import { UnitOfMeasureConverterService } from "../order-entry-module/domain-services/UnitOfMeasureConverterService";
-import { UnitOfMeasure } from "../order-entry-module/enums/order-entry-enums";
+import { UnitOfMeasureConverterService } from "./core-layer/order-entry-module/domain-services/UnitOfMeasureConverterService";
+import { UnitOfMeasure } from "./core-layer/order-entry-module/enums/order-entry-enums";
 
 
 const mockUOMAndGallonFactor: Record<string, { unitsOfMeasureInAContainer: number; gallonsInAContainer: number }> = {

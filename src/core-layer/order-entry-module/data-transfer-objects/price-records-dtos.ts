@@ -42,6 +42,3 @@ export interface ProductDto {
 }
 
 
-export interface SpecialPriceDTO {
-    
-}
