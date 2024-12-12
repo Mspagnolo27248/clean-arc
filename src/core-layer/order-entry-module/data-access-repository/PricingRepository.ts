@@ -5,10 +5,11 @@ import { PriceAgreement } from "../domain-entities/PriceAgreement";
 
 
 export interface PricingRepository {
-    createPriceAgreement(params:PriceAgreement):Promise<PriceAgreement>;
+    createPriceAgreement(params:PriceAgreementDto):Promise<PriceAgreementDto>;
     createRackPrice(rackPrice: RackPriceDto): Promise<RackPriceDto>;
     getProductById(productId: string): Promise<ProductDto>;
     getAllRackPricing(): Promise<RackPriceDto[]> ;
+    getAllPriceAgreements():Promise<PriceAgreementDto[]>;
     getAllProducts(): Promise<ProductDto[]>
     getOneUOMAndGallonFactor(productId: string, containerId: string, uom: string): Promise<{unitsOfMeasureInAContainer: number,gallonsInAContainer: number}>;    
     getManyUOMAndGallonFactor(productKeys: { productId: string, containerId: string, uoms: string }[]): Promise<ConversionFactorType>   

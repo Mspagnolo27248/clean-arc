@@ -1,8 +1,9 @@
+import { PriceAgreementModel } from "../../../shared-common/database/custom-orm/data-models/PriceAgreementModel";
 import { ProductModel } from "../../../shared-common/database/custom-orm/data-models/ProductModel";
 import { RackPriceModel } from "../../../shared-common/database/custom-orm/data-models/RackPriceModel";
 import { initializeDb } from "../../../shared-common/database/sqlite";
 import { CompositeKeyGenerator } from "../../general/CompositeKeyGenerator";
-import { ProductDto, RackPriceDto } from "../data-transfer-objects/price-records-dtos";
+import { PriceAgreementDto, ProductDto, RackPriceDto } from "../data-transfer-objects/price-records-dtos";
 import { PriceAgreement } from "../domain-entities/PriceAgreement";
 import { RackPrice } from "../domain-entities/RackPrice";
 import { PricingRepository, UOMAndGallonFactorCompositeKeyType } from "./PricingRepository";
@@ -19,97 +20,50 @@ export class PricingRepositoryImp implements PricingRepository {
     }
   }
 
-  // async createRackPrice(rackPriceDto: RackPriceDto): Promise<RackPriceDto> {
-  //     const db = await initializeDb();
-  //     try {
-  //         // Create a RackPrice entity from the DTO
-  //         const rackPrice = new RackPrice(rackPriceDto);
+  async getAllPriceAgreements(): Promise<PriceAgreementDto[]> {
+    try {
+      const data  = await PriceAgreementModel.findAll();
+      return data;
+    } catch (error) {
+      throw new Error(JSON.stringify(error));
+    }
+  }
 
-  //         // Now insert the rackPrice entity data into the database
-  //         let results = await db.run(
-  //             `INSERT INTO RackPrice ( ` +
-  //             `productId, containerId, rackPricePerUom, effectiveDate, expirationDate, uom, ` +
-  //             `priceTier1, priceTier2, priceTier3, priceTier4, minimumQuantity, ` +
-  //             `quantityTier1, quantityTier2, quantityTier3, quantityTier4, quantityTier5, ` +
-  //             `requiredFlag, inactiveFlag ) ` +
-  //             `VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-  //             [
-  //                 rackPrice.productCode, // Assuming productCode maps to productId
-  //                 rackPrice.containerCode, // Assuming containerCode maps to containerId
-  //                 rackPrice.unitOfMeasure,
-  //                 rackPrice.effectiveDate,
-  //                 rackPrice.effectiveTime, // Assuming expirationDate is not directly used
-  //                 rackPrice.unitOfMeasure,
-  //                 rackPrice.priceTier1,
-  //                 rackPrice.priceTier2,
-  //                 rackPrice.priceTier3,
-  //                 rackPrice.priceTier4,
-  //                 rackPrice.minimumQuantity,
-  //                 rackPrice.quantityTier1,
-  //                 rackPrice.quantityTier2,
-  //                 rackPrice.quantityTier3,
-  //                 rackPrice.quantityTier4,
-  //                 rackPrice.quantityTier5,
-  //                 rackPrice.requiredFlag,
-  //                 rackPrice.inactiveFlag,
-  //             ]
-  //         );
-  //         if(results.lastID)
-  //         {
-  //             return rackPriceDto; // Returning the same DTO, or you can return a new DTO after processing
-  //         }
-  //         else{
-  //             throw new Error(`Error creating RackPrice: ${results}`);
-  //         }
-  //     } catch (error) {
-  //         if (error instanceof Error) {
-  //             console.error(`Error creating RackPrice: ${error.message}`);
-  //             throw new Error(`Error creating RackPrice: ${error.message}`);
-  //         }
-  //     } finally {
-  //         await db.close();
-  //     }
 
-  //     throw new Error('Error creating RackPrice');
-  // }
-
-  async createPriceAgreement(entity: PriceAgreement): Promise<PriceAgreement> {
-    return entity;
+  async createPriceAgreement(entity: PriceAgreementDto): Promise<PriceAgreementDto> {
+    try {
+      const data  = await PriceAgreementModel.insert(entity);
+      return data;
+    } catch (error) {
+      throw new Error(JSON.stringify(error));
+    }
   }
 
   async getProductById(productId: string): Promise<ProductDto> {
-    const db = await initializeDb();
     try {
-      const product = await db.get(
-        "SELECT * FROM Product WHERE productId = ?",
-        [productId]
-      );
-      return product;
+       return await ProductModel.findByKey({productId})
     } catch (error) {
       if (error instanceof Error) {
         console.error(`Error getting product by ID: ${error.message}`);
         throw new Error(`Error getting product by ID: ${error.message}`);
       }
       throw new Error(`Error getting product by ID: `);
-    } finally {
-      await db.close();
-    }
+    } 
   }
 
   async getAllRackPricing(): Promise<RackPriceDto[]> {
-    const db = await initializeDb();
     try {
       const rackPriceRecords = await RackPriceModel.findAll();
       return rackPriceRecords;
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error(`Error getting rackPriceRecords${error.message}`);
+        throw new Error(`Error executing getAllRackPricing() ${error.message}`);
       }
-      throw new Error("Errpr getting all rackprice records");
-    } finally {
-      await db.close();
-    }
+      throw new Error("Error executing getAllRackPricing()");
+    } 
   }
+
+
 
   async getAllProducts(): Promise<ProductDto[]> {
     try {
