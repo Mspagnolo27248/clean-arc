@@ -10,11 +10,11 @@ export class GetRackPricingUseCase implements UseCase {
     }
 
     // Wrapping the async code in a try-catch block for error handling
-    async execute():Promise<RackPriceDto[]> {
+    async execute(limit=1000):Promise<RackPriceDto[]> {
         try {
             const data = await this.pricingRepository.getAllRackPricing();
 
-            return data.slice(0,1000);
+            return data.slice(0,limit);
         } catch (error) {
             // Log the error or handle it as needed
             console.error('Error fetching rack pricing:', error);

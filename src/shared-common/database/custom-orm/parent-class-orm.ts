@@ -4,7 +4,7 @@ import { initializeDb } from "../sqlite";
 
 export class ORM {
 
-  static async findAll(this: typeof ORM): Promise<any> {
+  static async findAll<T extends Record<string, any>>(this: typeof ORM): Promise<any> {
     const tableName = this.getTableName();
     const db = await initializeDb();
     const rawTableRecords = await db.all(`SELECT * FROM ${tableName}`);

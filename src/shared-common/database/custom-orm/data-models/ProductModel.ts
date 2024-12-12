@@ -1,19 +1,61 @@
 import { ProductDto } from "../../../../core-layer/order-entry-module/data-transfer-objects/price-records-dtos";
-import { ARGModel, TableColumn } from "../orm-decorators";
+import { ARGModel, KeyField, TableColumn } from "../orm-decorators";
 import { ORM } from "../parent-class-orm";
 
-
-@ARGModel('Product')
+@ARGModel('GGSPROD')
 export class ProductModel extends ORM implements ProductDto {
+    @KeyField
+    @TableColumn('TPPROD')
+    productId: string = '';
 
-    @TableColumn('productId') 
-    productId: string ='';
-
-    @TableColumn('productName') 
+    @TableColumn('TPDESC')
     productName: string = '';
 
-    @TableColumn('apiGravity') 
-    apiGravity: number = 30;
+    @TableColumn('TPCONO')
+    companyNumber: number = 0;
 
+    @TableColumn('TPIND8')
+    inactiveDate: number = 0;
 
+    @TableColumn('TPPLGR')
+    TPPLGR: number = 0;
+
+    @TableColumn('TPPLCL')
+    productClass: number = 0;
+
+    @TableColumn('TPPRGP')
+    productGroup: string = '';
+
+    @TableColumn('TPTOCO')
+    toCompany: number = 0;
+
+    @TableColumn('TPSHDS')
+    shortDescription: string = '';
+
+    @TableColumn('TPPRCL')
+    priceClass: string = '';
+
+    @TableColumn('TPGRAV')
+    apiGravity: number = 0;
+
+    @TableColumn('TPINGP')
+    inventoryGroup: string = '';
+
+    @TableColumn('TPSGLN')
+    salesGL: number = 0;
+
+    @TableColumn('TPABDS')
+    abbreviatedDescription: string = '';
+
+    @TableColumn('TPSELL')
+    sellIndicator: string = '';
+
+    @TableColumn('TPVCFC')
+    viscosityFlowCode: string = '';
+
+    @TableColumn('TPFLCD')
+    isFluid: string = '';
+
+    @TableColumn('TPRPSL')
+    reportingSlate: string = '';
 }
