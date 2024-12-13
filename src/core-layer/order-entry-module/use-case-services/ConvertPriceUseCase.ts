@@ -8,9 +8,7 @@ export class ConvertPriceUseCase {
   public async execute(priceRecord: RackPriceDto): Promise<UnitOfMeasureConverterServiceReturnType> {
     const {productCode,containerCode,price,unitOfMeasure} = priceRecord;
     
-    const gallonsFactors = await this.priceRepository.getManyUOMAndGallonFactor(
-      [{ productId: productCode, containerId: containerCode, uoms: unitOfMeasure }]
-    );
+    const gallonsFactors = await this.priceRepository.getManyUOMAndGallonFactor();
     const product = await this.priceRepository.getProductById(productCode);
     const convertedPrice = UnitOfMeasureConverterService(
       {

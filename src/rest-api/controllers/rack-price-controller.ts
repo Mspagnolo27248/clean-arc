@@ -12,7 +12,7 @@ import { GetRackPricingUseCase } from "../../core-layer/order-entry-module/use-c
 const pricingRepository: PricingRepository = new PricingRepositoryImp();
 const orderRepository: OrderRepository = new OrderRepositoryImpl();
 const createRackPriceUseCase: CreateRackPriceUseCase =  new CreateRackPriceUseCase(pricingRepository);
-const convertPriceUseCase: ConvertPriceUseCase =  new ConvertPriceUseCase(pricingRepository);
+
 
 export class RackPriceController {
 
@@ -51,6 +51,7 @@ export class RackPriceController {
   static async convertToGallons(req: Request, res: Response) {
     try {
       const priceRecord = req.body as RackPriceDto;
+      const convertPriceUseCase: ConvertPriceUseCase =  new ConvertPriceUseCase(pricingRepository);
       const convertedPrice = await convertPriceUseCase.execute(priceRecord);
       return res.status(200).json(convertedPrice);
     } catch (error) {

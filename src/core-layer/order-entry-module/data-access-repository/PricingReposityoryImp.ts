@@ -89,7 +89,7 @@ export class PricingRepositoryImp implements PricingRepository {
     gallonsInAContainer: number;
   }> {
     const key =
-      CompositeKeyGenerator.generateKey<UOMAndGallonFactorCompositeKeyType>({
+      CompositeKeyGenerator.generateKey({
         productId,
         containerId,
         uom,
@@ -102,9 +102,7 @@ export class PricingRepositoryImp implements PricingRepository {
     return Promise.resolve(uomAndGallonFactor);
   }
 
-  getManyUOMAndGallonFactor(
-    keys: { productId: string; containerId: string; uoms: string }[]
-  ): Promise<{
+  getManyUOMAndGallonFactor( ): Promise<{
     [key: string]: {
       unitsOfMeasureInAContainer: number;
       gallonsInAContainer: number;

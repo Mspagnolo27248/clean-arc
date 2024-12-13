@@ -12,7 +12,7 @@ export interface PricingRepository {
     getAllPriceAgreements():Promise<PriceAgreementDto[]>;
     getAllProducts(): Promise<ProductDto[]>
     getOneUOMAndGallonFactor(productId: string, containerId: string, uom: string): Promise<{unitsOfMeasureInAContainer: number,gallonsInAContainer: number}>;    
-    getManyUOMAndGallonFactor(productKeys: { productId: string, containerId: string, uoms: string }[]): Promise<ConversionFactorType>   
+    getManyUOMAndGallonFactor(): Promise<ConversionFactorType>   
 }
 
 export type ConversionFactorType = Record<string, { unitsOfMeasureInAContainer: number, gallonsInAContainer: number }>

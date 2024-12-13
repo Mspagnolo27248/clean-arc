@@ -1,3 +1,4 @@
+import { CompositeKeyGenerator } from "../../general/CompositeKeyGenerator";
 import { ConversionFactorType } from "../data-access-repository/PricingRepository";
 import { UnitOfMeasure } from "../enums/order-entry-enums";
 
@@ -17,8 +18,9 @@ export function UnitOfMeasureConverterService(
 {   
     const {product,apiGravity,container,uom,pricePerUnitOfMeasure,qtyOfContainers} = inputsToConvert;
     let qtyInGallons:number;
-    let qtyInUnitsOfMeasure:number;    
-    const conversions = conversionFactors[`${product}|${container}|${uom}`];
+    let qtyInUnitsOfMeasure:number; 
+    let key = CompositeKeyGenerator.generateKey({product,container,uom})   
+    const conversions = conversionFactors[key];
     const lbsPerGallon = lbsPerGallonFromGravity(apiGravity);
     
     switch(uom){
