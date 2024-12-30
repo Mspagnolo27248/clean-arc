@@ -41,7 +41,7 @@ export class GetRackPricingWithConversionsUseCase {
             uoms: record.unitOfMeasure
         }));
 
-        return await this.pricingRepository.getManyUOMAndGallonFactor(pricingDetails);
+        return await this.pricingRepository.getManyUOMAndGallonFactor();
     }
 
     // Calculate and convert pricing using the retrieved data

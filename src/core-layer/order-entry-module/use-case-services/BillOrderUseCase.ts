@@ -9,7 +9,7 @@ export class BillOrderUseCase{
     constructor(private orderRepository: OrderRepository,private priceRepository:PricingRepository) {}
     public async execute(orderDTO:OrderDTO):Promise<OrderDTO>{
         const order = new Order(orderDTO);
-        const  gallonsFactors = await this.priceRepository.getManyUOMAndGallonFactor(order.getDetails().map(detail=>({productId:detail.productID,containerId:detail.containerID,uoms:detail.uom})));
+        const  gallonsFactors = await this.priceRepository.getManyUOMAndGallonFactor();
         //Calculate billedQtyUom
          order.setBillingInfomation(gallonsFactors);
 
