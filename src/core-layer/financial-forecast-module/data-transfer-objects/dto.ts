@@ -97,10 +97,10 @@ export interface ProductDateDict{
     [Product: string]: { 
       [Date: number]: OutputItems[] } 
 }
-export interface IModel {
+export interface Model {
   Output: ProductDateDict
 }
-export type ModelOutputParams  =  RollingForecastInputParams & IModel;
+export type ModelOutputParams  =  RollingForecastInputParams & Model;
 
 
 export interface OutputItems{

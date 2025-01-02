@@ -1,14 +1,15 @@
+
+import { ForecastModelRepositoryImp } from "../data-access-repository/ForecastModelRepositoryImp";
 import { MonthlyDemandForecastItem, RollingForecastInputParams, ScheduleItem, UnitYieldItem } from "../data-transfer-objects/dto";
-import { MonthlyForecast } from "../data/MonthlyForecast";
-import { openOrders } from "../data/OpenOrders";
-import { ProductFormulations } from "../data/ProductFormulations";
-import { producstToRun } from "../data/ProductsToRun";
-import { receiptsData } from "../data/RececiptsData";
-import { Schedule } from "../data/Schedule";
-import { UnitYields } from "../data/UnitYieldsData";
-import { OutputService } from "../services/outputService";
-import { generateBlendRequirements, generateDailyDemandForecastFromMonthly } from "./helper-functions";
-import { RollingForecastService } from "./RollingForecastService";
+import { MonthlyForecast } from "./MonthlyForecast";
+import { openOrders } from "./OpenOrders";
+import { ProductFormulations } from "./ProductFormulations";
+import { producstToRun } from "./ProductsToRun";
+import { receiptsData } from "./RececiptsData";
+import { Schedule } from "./Schedule";
+import { UnitYields } from "./UnitYieldsData";
+import { generateBlendRequirements, generateDailyDemandForecastFromMonthly } from "../helper-functions/helper-functions";
+import { RollingForecastService } from "../helper-functions/RollingForecastService";
 
 
 const products = producstToRun.map((item)=>({...item,ProductCode:`${item.ProductCode}`}));
@@ -21,7 +22,7 @@ const blends = ProductFormulations.map(item=>({...item,Finished_ProductCode:`${i
 const blendRequirements = generateBlendRequirements(openOrders,dailyForecast,blends);
 
 const inputParams:RollingForecastInputParams = {
-    ModelMetaData:{startDate:20240101,runDays:90,uid:"901",id_description:"test-model"} ,
+    ModelMetaData:{startDate:20240112,runDays:31,uid:"901",id_description:"test-model"} ,
     ProductsForModelItem: products,
     Receipts: receipts,
     ScheduleItem: schedule,
@@ -33,5 +34,6 @@ const inputParams:RollingForecastInputParams = {
 
 const model = new RollingForecastService(inputParams);
 const modelOutput = model.outputModel();
-OutputService.saveOutput('model1',modelOutput)
+const repo = new ForecastModelRepositoryImp('./data/json');
+repo.saveModel('model2.json',modelOutput)
 console.log(modelOutput)

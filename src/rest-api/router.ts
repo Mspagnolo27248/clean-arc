@@ -2,8 +2,7 @@ import { Router } from "express";
 import ordersRoutes from "./routes/orders-routes";
 import rackPriceRoutes from "./routes/rack-price.routes";
 import specialPriceRoutes from "./routes/special-price.routes";
-import { ParameterController } from "./controllers/parameter-controller";
-import parameterRoutes from "./routes/parameter-routes";
+import forecastModelRoutes from "./routes/forecast-model.routes";
 
 
 const router = Router();
@@ -15,7 +14,7 @@ const router = Router();
 router.use('/orders',ordersRoutes);
 router.use('/rack-price',rackPriceRoutes);
 router.use('/special-price',specialPriceRoutes);
-router.use('/parameters',parameterRoutes);
+router.use('/forecast-model',forecastModelRoutes);
 
 
 
