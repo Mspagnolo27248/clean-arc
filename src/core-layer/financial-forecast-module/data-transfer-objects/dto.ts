@@ -76,7 +76,7 @@ export interface RollingForecastInputParams {
   Receipts: ReceiptsItem[];
   DailyOpenOrders: DailyOpenOrderItem[];
   DailyDemandForecast: DailyDemandForecastItem[];
-  DailyBlendRequirements: DailyBlendRequirementsItem[];
+  ProductFormulation:ProductFormulationItem[];
   ScheduleItem:ScheduleItem[];
   UnitYieldItem:UnitYieldItem[];
 }
