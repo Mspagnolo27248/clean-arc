@@ -14,7 +14,7 @@ import {
   ScheduleItem,
   UnitYieldItem,
 } from "../data-transfer-objects/dto";
-import { DateUtils } from "./helper-functions";
+import { createMap, DateUtils } from "./helper-functions";
 
 export class RollingForecastService {
   RollingForecastInputParams: RollingForecastInputParams;
@@ -22,35 +22,24 @@ export class RollingForecastService {
   Receipts: Map<string, ReceiptsItem>;
   DailyOpenOrders: Map<string, DailyOpenOrderItem>;
   DailyDemandForecast: Map<string, DailyDemandForecastItem>;
-  DailyBlendRequirements: {[Product:string]:{[Date:string]:number}};
-  ScheduleItem: ScheduleItem[];
-  UnitYieldItem: UnitYieldItem[];
-  ProductFormulation: ProductFormulationItem[];
+  BlendRequirements: DailyBlendRequirementsItem;
   RunDates: number[];
   ProductionIn: ProductionData;
   ProductionOut: ProductionData;
 
   constructor(params: RollingForecastInputParams) {
     this.RollingForecastInputParams = params;
-    this.ScheduleItem = params.ScheduleItem;
-    this.UnitYieldItem = params.UnitYieldItem;
-    this.ProductFormulation = params.ProductFormulation;
-    const production = this.generateDailyProduction(
-      params.ScheduleItem,
-      params.UnitYieldItem
-    );
+    const production = this.generateDailyProduction(params.ScheduleItem,params.UnitYieldItem);
     this.ProductionIn = production.productionIn;
     this.ProductionOut = production.productionOut;
-    this.ProductsForModelItem = this.createProductMap(
-      params.ProductsForModelItem
-    );
-    this.Receipts = this.createReceiptsMap(params.Receipts);
-    this.DailyOpenOrders = this.createOpenOrdersMap(params.DailyOpenOrders);
-    this.DailyDemandForecast = this.createDailyDemandMap(
-      params.DailyDemandForecast
-    );
-    this.DailyBlendRequirements = this.calculateDailyBlendRequirements(
-      params.ProductFormulation, params.DailyDemandForecast, params.DailyOpenOrders);
+    this.ProductsForModelItem =  createMap(params.ProductsForModelItem, ["ProductCode"]);  
+    this.Receipts = createMap(params.Receipts, ["ProductCode", "Date"])
+    this.DailyOpenOrders = createMap(params.DailyOpenOrders,["ProductCode","Date"]);
+    this.DailyDemandForecast = createMap(params.DailyDemandForecast,["ProductCode","Date"])
+    this.BlendRequirements = this.calculateDailyBlendRequirements(
+      params.ProductFormulation, 
+      params.DailyDemandForecast, 
+      params.DailyOpenOrders);
     this.RunDates = this.generateDateRange(
       this.RollingForecastInputParams.ModelMetaData.startDate,
       this.RollingForecastInputParams.ModelMetaData.runDays
@@ -58,26 +47,14 @@ export class RollingForecastService {
   }
 
   calculateEndingInventory(
-    productCode: string,
-    date: number,
-    previousEndInventory: number | null
+    openInventory:number,
+    receipts:number ,
+    productionIn:number ,
+    demandForecast:number ,
+    openOrders:number ,
+    blendRequirements:number ,
+    productionOut:number
   ): number {
-    const openInventory =
-      previousEndInventory !== null
-        ? previousEndInventory
-        : this.ProductsForModelItem.get(productCode)?.CurrentInventoryGals || 0;
-
-    const receipts = this.Receipts.get(`${productCode}|${date}`)?.Gals || 0;
-    const productionIn = this.ProductionIn[`${productCode}`]?.[`${date}`] || 0; // Fixed key format
-    const productionOut =
-      this.ProductionOut[`${productCode}`]?.[`${date}`] || 0; // Fixed key format
-    const demandForecast =
-      this.DailyDemandForecast.get(`${productCode}|${date}`)?.Gals || 0;
-    const openOrders =
-      this.DailyOpenOrders.get(`${productCode}|${date}`)?.Gals || 0;
-    const blendRequirements =
-      this.DailyBlendRequirements[`${productCode}`]?.[`${date}`] || 0;
-
     return (
       openInventory +
       receipts +
@@ -97,28 +74,16 @@ export class RollingForecastService {
       let previousEndInventory: number | null = null;
 
       this.RunDates.forEach((date) => {
-        const openInventory =
-          previousEndInventory !== null
-            ? previousEndInventory
-            : product.CurrentInventoryGals || 0;
+        const openInventory =previousEndInventory ?? this.ProductsForModelItem.get(productCode)?.CurrentInventoryGals ?? 0;
         const receipts = this.Receipts.get(`${productCode}|${date}`)?.Gals || 0;
-        const productionIn =
-          this.ProductionIn[`${productCode}`]?.[`${date}`] || 0;
-        const productionOut =
-          this.ProductionOut[`${productCode}`]?.[`${date}`] || 0;
-        const demandForecast =
-          this.DailyDemandForecast.get(`${productCode}|${date}`)?.Gals || 0;
-        const openOrders =
-          this.DailyOpenOrders.get(`${productCode}|${date}`)?.Gals || 0;
-        const blendRequirements =
-        this.DailyBlendRequirements[`${productCode}`]?.[`${date}`] || 0;
-
+        const productionIn = this.ProductionIn[`${productCode}`]?.[`${date}`] || 0;
+        const productionOut = this.ProductionOut[`${productCode}`]?.[`${date}`] || 0;
+        const demandForecast =  this.DailyDemandForecast.get(`${productCode}|${date}`)?.Gals || 0;
+        const openOrders = this.DailyOpenOrders.get(`${productCode}|${date}`)?.Gals || 0;
+        const blendRequirements =this.BlendRequirements[`${productCode}`]?.[`${date}`] || 0;
         const endingInventory = this.calculateEndingInventory(
-          productCode,
-          date,
-          previousEndInventory
+          openInventory,receipts,productionIn,productionOut,demandForecast,openOrders,blendRequirements          
         );
-
         productData[date] = [
           {
             OpenInventory: openInventory,
@@ -144,75 +109,16 @@ export class RollingForecastService {
     } as ModelOutputParams;
   }
 
-  generateStringKeyFromFields<T extends object, K extends keyof T>(
-    obj: T,
-    fields: K[]
-  ): string {
-    return fields.map((field) => obj[field]).join("|");
-  }
 
   private generateDateRange(startDate: number, runDays: number): number[] {
     return DateUtils.createDateRangeFromIntegerDate(startDate, runDays);
   }
 
-  private createProductMap(params: ProductsForModelItem[]) {
-    return new Map(
-      params.map((item) => {
-        const key = this.generateStringKeyFromFields(item, ["ProductCode"]);
-        return [key, item];
-      })
-    );
-  }
 
-  private createReceiptsMap(params: ReceiptsItem[]) {
-    return new Map(
-      params.map((item) => {
-        const key = this.generateStringKeyFromFields(item, [
-          "ProductCode",
-          "Date",
-        ]);
-        return [key, item];
-      })
-    );
-  }
 
-  //   private createProductionOutMap(params: UnitProductionOutItem[]) {
-  //     return new Map(
-  //       params.map((item) => {
-  //         const key = this.generateStringKeyFromFields(item, [
-  //           "Unit",
-  //           "Charge_ProductCode",
-  //           "Output_ProductCode",
-  //           "Date",
-  //         ]);
-  //         return [key, item];
-  //       })
-  //     );
-  //   }
 
-  private createOpenOrdersMap(params: DailyOpenOrderItem[]) {
-    return new Map(
-      params.map((item) => {
-        const key = this.generateStringKeyFromFields(item, [
-          "ProductCode",
-          "Date",
-        ]);
-        return [key, item];
-      })
-    );
-  }
 
-  private createDailyDemandMap(params: DailyDemandForecastItem[]) {
-    return new Map(
-      params.map((item) => {
-        const key = this.generateStringKeyFromFields(item, [
-          "ProductCode",
-          "Date",
-        ]);
-        return [key, item];
-      })
-    );
-  }
+
 
   private calculateDailyBlendRequirements(
     formulations: ProductFormulationItem[],
@@ -300,4 +206,11 @@ export class RollingForecastService {
       productionOut,
     } as DailyProductionOutput;
   }
+
+
+
+  
 }
+
+
+

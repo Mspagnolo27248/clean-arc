@@ -1,46 +1,9 @@
 
-import { DailyBlendRequirementsItem, DailyDemandForecastItem, MonthlyDemandForecastItem, ScheduleItem, UnitProductionOutItem, UnitYieldItem } from "../data-transfer-objects/dto";
+import {DailyDemandForecastItem, MonthlyDemandForecastItem, ScheduleItem, UnitProductionOutItem, UnitYieldItem } from "../data-transfer-objects/dto";
 import { ProductFormulationItem } from "../data-transfer-objects/dto";
 import { DailyOpenOrderItem } from "../data-transfer-objects/dto";
 
-export function generateBlendRequirements(
-  openOrders: DailyOpenOrderItem[],
-  dailyForecast: DailyDemandForecastItem[],
-  blendRequirements: ProductFormulationItem[]
-): DailyBlendRequirementsItem[] {
-  const requirementsMap: { [key: string]: DailyBlendRequirementsItem } = {};
 
-  const processSource = (
-    source: { ProductCode: string; Date: number; Gals: number }[],
-   
-  ) => {
-    source.forEach((item) => {
-      const formulations = blendRequirements.filter(
-        (requirement) => requirement.Finished_ProductCode === item.ProductCode
-      );
-
-      formulations.forEach((formulation) => {
-        const requiredGals = (item.Gals * formulation.FormulaPercent) / 100;
-        const key = `${formulation.Component_ProductCode}-${item.Date}`;
-
-        if (requirementsMap[key]) {
-          requirementsMap[key].Gals += requiredGals;
-        } else {
-          requirementsMap[key] = {
-            Component_ProductCode: formulation.Component_ProductCode.toString(),
-            Date: item.Date,
-            Gals: requiredGals,
-          };
-        }
-      });
-    });
-  };
-
-  processSource(openOrders);
-  processSource(dailyForecast);
-
-  return Object.values(requirementsMap);
-}
   
   export function generateDailyDemandForecastFromMonthly(
     monthlyForecast: MonthlyDemandForecastItem[]
@@ -109,4 +72,110 @@ export function generateBlendRequirements(
     }
   }
   
+  export function generateStringKeyFromFields<T extends object, K extends keyof T>(
+    obj: T,
+    fields: K[]
+  ): string {
+    return fields.map((field) => obj[field]).join("|");
+  }
+  
+  
+  export function createMap<T extends object, U>(
+    params: T[],
+    keyFields: (keyof T)[],
+    valueField?: keyof T
+  ): Map<string, U> {
+    return new Map(
+      params.map((item) => {
+        const key = generateStringKeyFromFields(item, keyFields);
+        const value = (valueField ? item[valueField]  :item ) as U;
+        return [key, value];
+      })
+    );
+  }
+  
+
+
+  export function createNestedObject<T extends object>(
+    params: T[],
+    keyFields: (keyof T)[],
+    valueField: keyof T,
+    aggregate:(currentValue: any, newValue: any)=> any = (currentValue, newValue) => currentValue +  newValue ,
+    storeFullObject: boolean = false
+  ){
+    const nestedObject: Record<string, any> = {};
+  
+    params.forEach((item) => {
+      let currentLevel = nestedObject;
+  
+      keyFields.forEach((field, index) => {
+        const key = item[field] as string | number;
+  
+        if (index === keyFields.length - 1) {
+          const newValue = storeFullObject ? (item ) : (item[valueField] );
+          if (currentLevel[key] !== undefined) {
+            currentLevel[key] = aggregate
+              ? aggregate(currentLevel[key], newValue)
+              : newValue;
+          } else {
+            currentLevel[key] = newValue;
+          }
+        } else {
+          if (!currentLevel[key]) {
+            currentLevel[key] = {};
+          }
+          currentLevel = currentLevel[key];
+        }
+      });
+    });
+  
+    return nestedObject;
+  }
+  
+
+
+  type NestedObject<T, K extends keyof T> = {
+    [key: string]: NestedObject<T, Exclude<keyof T, K>> | T[]; // Recursively handle nesting
+  };
+
+  type ConvertObjectArrayToNestedObjectWithArrayValue<T, K extends keyof T> = {
+    [key: string]: NestedObject<T, Exclude<keyof T, K>> | T[]; // Recursively handle nesting
+  };
+  
+  function convertToNestedObject<T>(array: T[], keyFields: (keyof T)[]): NestedObject<T, keyof T> {
+    const result: NestedObject<T, keyof T> = {};
+  
+    array.forEach(item => {
+      let currentLevel = result;
+  
+      // Traverse through the key fields
+      keyFields.forEach((field, index) => {
+        const keyValue = item[field] as unknown as string;
+  
+        // If we're at the last key field, we need to add the remaining properties
+        if (index === keyFields.length - 1) {
+          // Remove the key fields from the item to get the remaining properties
+          const remainingProperties = Object.fromEntries(
+            Object.entries(item as keyof T).filter(([key]) => !keyFields.includes(key as keyof T))
+          );
+  
+          // If the key doesn't exist, initialize it with an empty array
+          if (!currentLevel[keyValue]) {
+            currentLevel[keyValue] = [];
+          }
+  
+          // Add the remaining properties as an object to the array
+          (currentLevel[keyValue] as T[]).push(remainingProperties as T);
+        } else {
+          // Otherwise, move deeper into the next level
+          if (!currentLevel[keyValue]) {
+            currentLevel[keyValue] = {};
+          }
+          currentLevel = currentLevel[keyValue] as NestedObject<T, keyof T>;
+        }
+      });
+    });
+  
+    return result;
+  }
   

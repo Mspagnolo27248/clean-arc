@@ -58,11 +58,9 @@ export interface DailyOpenOrderItem {
   Gals: number;
 }
 
-export interface DailyBlendRequirementsItem {
-  Component_ProductCode: string;
-  Date: number;
-  Gals: number;
-}
+export interface DailyBlendRequirementsItem 
+  {[Product:string]:{[Date:string]:number}}
+
 
 export interface ProductFormulationItem {
   Finished_ProductCode: string;
