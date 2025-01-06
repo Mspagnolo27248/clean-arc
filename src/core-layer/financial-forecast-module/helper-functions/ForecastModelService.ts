@@ -1,6 +1,7 @@
 import {
   DailyProductionOutput,
   OutputItems,
+  ProductDateDict,
   ProductionData,
 } from "../data-transfer-objects/dto";
 
@@ -15,12 +16,15 @@ import {
 import { DateUtils } from "./helper-functions";
 
 export class ForecastModelService {
+  private ForecastModelInputs:ForecastModelInputs;
   private runDates: number[];
   private productionIn: ProductionData;
   private productionOut: ProductionData;
   private blendRequirements: ProductDateKeys;
+  private report:OutputItems= {};
 
   constructor(params: ForecastModelInputs) {
+    this.ForecastModelInputs = params;
     this.runDates = this.generateDateRange(
       params.ModelMetaData.startDate,
       params.ModelMetaData.runDays
@@ -125,18 +129,41 @@ export class ForecastModelService {
     );
   }
 
-  outputModel(): { [Date: string]: OutputItems[] } {
-    const result: { [Date: string]: OutputItems[] } = {};
+  run(): void {
+    const outputs:OutputItems = {};  
+    const products = this.ForecastModelInputs.ProductsForModelItem;
+    const receiptsDict = this.ForecastModelInputs.Receipts;
+    products.forEach((product) => {
+      const productData: { [Date: string]: OutputItems[] } = {};
+      let previousEndInventory: number | null = null;
+      this.runDates.forEach((date) => {
+        const openInventory =previousEndInventory ?? product?.CurrentInventoryGals ?? 0;
+        const receipts = receiptsDict[`${productCode}`]?[`${date}`] || 0;
+        const productionIn = this.ProductionIn[`${productCode}`]?.[`${date}`] || 0;
+        const productionOut = this.ProductionOut[`${productCode}`]?.[`${date}`] || 0;
+        const demandForecast =  this.DailyDemandForecast.get(`${productCode}|${date}`)?.Gals || 0;
+        const openOrders = this.DailyOpenOrders.get(`${productCode}|${date}`)?.Gals || 0;
+        const blendRequirements =this.BlendRequirements[`${productCode}`]?.[`${date}`] || 0;
+        const endingInventory = this.calculateEndingInventory(
+          openInventory,receipts,productionIn,productionOut,demandForecast,openOrders,blendRequirements          
+        );
+      })
+ 
 
-    this.runDates.forEach((date) => {
-      // Add your logic here to populate the result
-      result[date] = [];
-    });
+    this.report = outputs
+  }}
 
-    return result;
-  }
+// output():ForecastModelOutputParams{
+//   return{
+//     ...this.ForecastModelInputs,
+//     ...
+//   }
+// }
 
   private generateDateRange(startDate: number, runDays: number): number[] {
     return DateUtils.createDateRangeFromIntegerDate(startDate, runDays);
   }
 }
+
+type OutputItems = {[Product:string]:{[Date: string]: OutputItems[]}} 
+type ForecastModelOutputParams = ForecastModelInputs & OutputItems

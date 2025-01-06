@@ -30,7 +30,7 @@ export type ProductFormulationsObject = {
 
 export interface ForecastModelInputs {
     ModelMetaData: ModelMetaData;
-    ProductsForModelItem: ProductsForModelItem,
+    ProductsForModelItem: ProductsForModelItem[],
     Receipts:ProductDateKeys,
     DailyOpenOrders:ProductDateKeys,
     DailyDemandForecast:ProductDateKeys,
