@@ -28,7 +28,11 @@ export class SpecialPriceController {
     static async getAll(req: Request, res: Response){
       const pricingRepository: PricingRepository = new PricingRepositoryImp();
       const usecase = new GetAllPriceAgreements(pricingRepository);
-      const limit = parseInt(String(req.query.limit))??100
+      let limit = 100;
+      let isNumber = !Number.isNaN(parseInt(String(req.query.limit)))
+      if(isNumber){
+         limit = parseInt(String(req.query.limit))
+      }   
       try {
         const rackPrices = await usecase.execute(limit);
         return res.status(201).json(rackPrices);

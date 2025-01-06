@@ -1,11 +1,9 @@
 import {
-  DailyDemandForecastItem,
   DailyProductionOutput,
   OutputItems,
-  ProductDateDict,
   ProductionData,
-  UnitYieldItem,
 } from "../data-transfer-objects/dto";
+
 import {
   ForecastModelInputs,
   ProductDateKeys,
@@ -13,6 +11,7 @@ import {
   UnitProductDateKeys,
   UnitYieldObject,
 } from "../tests/RunNestedModelTest";
+
 import { DateUtils } from "./helper-functions";
 
 export class ForecastModelService {
@@ -41,10 +40,12 @@ export class ForecastModelService {
     );
   }
 
-  generateProductionValues(
+
+  generateProductionValues(   
     schedule: UnitProductDateKeys,
     unitYields: UnitYieldObject
   ): DailyProductionOutput {
+    const BBL_PER_GAL = 42;
     const productionIn: ProductionData = {};
     const productionOut: ProductionData = {};
 
@@ -52,13 +53,26 @@ export class ForecastModelService {
       for (const charge in schedule[unit]) {
         for (const day in schedule[unit][charge]) {
           const chargeQty = schedule[unit][charge][day];
-          productionIn[charge][day] = chargeQty;
-          const outputProducts = unitYields[unit][charge];
+
+          //Production Out
+          if (!productionOut[charge]) {
+            productionOut[charge] = {}
+          }
+          productionOut[charge][day] = 
+          (productionOut[charge][day] || 0) + chargeQty * BBL_PER_GAL;
+         
+
+          //Production In
+          const outputProducts = unitYields[unit][charge];        
           outputProducts.forEach(
-            (component) =>
-              (productionOut[component.Output_ProductCode][day] =
-                component.OutputPercent * chargeQty)
-          );
+            (component) => {
+              const outputProductCode = component.Output_ProductCode;
+              const outputQty = component.OutputPercent * chargeQty * BBL_PER_GAL;
+              if (!productionIn[outputProductCode]) {
+                productionIn[outputProductCode] = { }
+              }
+              productionIn[outputProductCode][day] = outputQty;
+            });
         }
       }
     }
@@ -112,8 +126,6 @@ export class ForecastModelService {
   }
 
   outputModel(): { [Date: string]: OutputItems[] } {
-    // Implementation will depend on ForecastModelInputs structure
-    // This is a placeholder that needs to be completed based on your specific requirements
     const result: { [Date: string]: OutputItems[] } = {};
 
     this.runDates.forEach((date) => {
