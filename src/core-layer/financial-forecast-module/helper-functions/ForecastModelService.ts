@@ -21,7 +21,7 @@ export class ForecastModelService {
   private productionIn: ProductionData;
   private productionOut: ProductionData;
   private blendRequirements: ProductDateKeys;
-  private report:OutputItems= {};
+  private RollForwardOutput:RollForwardOutput= {};
 
   constructor(params: ForecastModelInputs) {
     this.ForecastModelInputs = params;
@@ -93,13 +93,20 @@ export class ForecastModelService {
 
     function addComponentReqs(demand: ProductDateKeys) {
       for (const product in demand) {
-        for (const day in demand[product]) {
+        if(!formulations[product]) continue;
+
+        for (const day in demand[product]) {  
+          const demandQty = demand[product][day];
+
           formulations[product].forEach((component) => {
-            if (!ComponentDateReq[component.ComponentCode][day]) {
-              ComponentDateReq[component.ComponentCode][day] = 0;
+            const {ComponentCode,FormulaPercent} = component;
+            
+            if (!ComponentDateReq[ComponentCode]) {
+              ComponentDateReq[ComponentCode]={}
             }
-            ComponentDateReq[component.ComponentCode][day] +=
-              component.FormulaPercent * demand[product][day];
+            ComponentDateReq[ComponentCode][day] =
+            ((ComponentDateReq[ComponentCode][day]||0) +
+            (FormulaPercent * demandQty));
           });
         }
       }
@@ -109,7 +116,7 @@ export class ForecastModelService {
     return ComponentDateReq as ProductDateKeys;
   }
 
-  calculateEndingInventory(
+  private calculateEndingInventory(
     openInventory: number,
     receipts: number,
     productionIn: number,
@@ -130,40 +137,57 @@ export class ForecastModelService {
   }
 
   run(): void {
-    const outputs:OutputItems = {};  
-    const products = this.ForecastModelInputs.ProductsForModelItem;
-    const receiptsDict = this.ForecastModelInputs.Receipts;
-    products.forEach((product) => {
-      const productData: { [Date: string]: OutputItems[] } = {};
+    const outputs:RollForwardOutput = {};  
+    const {ProductsForModelItem,Receipts,DailyDemandForecast,DailyOpenOrders} = this.ForecastModelInputs;
+   
+    ProductsForModelItem.forEach((product) => {
+      const {ProductCode,CurrentInventoryGals}  = product;
+      const outputByDay: { [date: string]: OutputItems[] } = {};
       let previousEndInventory: number | null = null;
+
       this.runDates.forEach((date) => {
-        const openInventory =previousEndInventory ?? product?.CurrentInventoryGals ?? 0;
-        const receipts = receiptsDict[`${productCode}`]?[`${date}`] || 0;
-        const productionIn = this.ProductionIn[`${productCode}`]?.[`${date}`] || 0;
-        const productionOut = this.ProductionOut[`${productCode}`]?.[`${date}`] || 0;
-        const demandForecast =  this.DailyDemandForecast.get(`${productCode}|${date}`)?.Gals || 0;
-        const openOrders = this.DailyOpenOrders.get(`${productCode}|${date}`)?.Gals || 0;
-        const blendRequirements =this.BlendRequirements[`${productCode}`]?.[`${date}`] || 0;
+        const openInventory =previousEndInventory ?? CurrentInventoryGals ?? 0;
+        const receipt = Receipts[`${ProductCode}`]?.[`${date}`] || 0;
+        const productionIn = this.productionIn[`${ProductCode}`]?.[`${date}`] || 0;
+        const productionOut = this.productionOut[`${ProductCode}`]?.[`${date}`] || 0;
+        const demandForecast =  DailyDemandForecast[`${ProductCode}`]?.[`${date}`] || 0;
+        const openOrders = DailyOpenOrders[`${ProductCode}`]?.[`${date}`] || 0;
+        const blendRequirements =this.blendRequirements[`${ProductCode}`]?.[`${date}`] || 0;
+       
         const endingInventory = this.calculateEndingInventory(
-          openInventory,receipts,productionIn,productionOut,demandForecast,openOrders,blendRequirements          
+          openInventory,receipt,productionIn,productionOut,demandForecast,openOrders,blendRequirements          
         );
-      })
- 
+        outputByDay[date] = outputByDay[date] || [];
+        outputByDay[date].push({
+          OpenInventory: openInventory,
+          Receipts: receipt,
+          ProductionIn: productionIn,
+          ProductionOut: productionOut,
+          OpenOrders: openOrders,
+          DemandForecast: demandForecast,
+          BlendRequirements: blendRequirements,
+          EndingInventory: endingInventory,
+        });
 
-    this.report = outputs
-  }}
+        // Update previousEndInventory for the next day
+        previousEndInventory = endingInventory;
+      });
+      outputs[ProductCode] = outputByDay;
+    });
+    this.RollForwardOutput = outputs
+  }
 
-// output():ForecastModelOutputParams{
-//   return{
-//     ...this.ForecastModelInputs,
-//     ...
-//   }
-// }
+output():ForecastModelOutputParams{
+  return{
+    ...this.ForecastModelInputs,
+    Outputs:this.RollForwardOutput
+  }
+}
 
   private generateDateRange(startDate: number, runDays: number): number[] {
     return DateUtils.createDateRangeFromIntegerDate(startDate, runDays);
   }
 }
 
-type OutputItems = {[Product:string]:{[Date: string]: OutputItems[]}} 
-type ForecastModelOutputParams = ForecastModelInputs & OutputItems
+type RollForwardOutput = {[Product:string]:{[Date: string]: OutputItems[]}} 
+type ForecastModelOutputParams = ForecastModelInputs & {Outputs:RollForwardOutput}

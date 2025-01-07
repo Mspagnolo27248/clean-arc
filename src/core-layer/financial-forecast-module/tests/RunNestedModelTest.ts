@@ -44,3 +44,8 @@ const inputs:ForecastModelInputs = FileService.readJSON('./data/json/nested/mode
 
 
 const model = new ForecastModelService(inputs);
+
+model.run()
+const output = model.output();
+FileService.writeJSON('./data/json/nested/output.json',output)
+console.log(output)
