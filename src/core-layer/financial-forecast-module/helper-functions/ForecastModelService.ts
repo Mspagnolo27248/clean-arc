@@ -45,7 +45,7 @@ export class ForecastModelService {
   }
 
 
-  generateProductionValues(   
+  private generateProductionValues(   
     schedule: UnitProductDateKeys,
     unitYields: UnitYieldObject
   ): DailyProductionOutput {
@@ -84,7 +84,7 @@ export class ForecastModelService {
     return { productionIn, productionOut };
   }
 
-  generateBlendRequirements(
+  private generateBlendRequirements(
     formulations: ProductFormulationsObject,
     dailyDemand: ProductDateKeys,
     openOrders: ProductDateKeys
@@ -190,4 +190,4 @@ output():ForecastModelOutputParams{
 }
 
 type RollForwardOutput = {[Product:string]:{[Date: string]: OutputItems[]}} 
-type ForecastModelOutputParams = ForecastModelInputs & {Outputs:RollForwardOutput}
+export type ForecastModelOutputParams = ForecastModelInputs & {Outputs:RollForwardOutput}

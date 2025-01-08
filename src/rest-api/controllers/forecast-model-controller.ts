@@ -5,6 +5,7 @@ import { ForecastModelRepositoryImp } from "../../core-layer/financial-forecast-
 import { OpenExistingModelUseCase } from "../../core-layer/financial-forecast-module/use-cases/OpenExistingModelUseCase";
 import { RollingForecastInputParams } from "../../core-layer/financial-forecast-module/data-transfer-objects/dto";
 import { CalcualteInventoryRollforwardUseCase } from "../../core-layer/financial-forecast-module/use-cases/CalculateInventoryRollforwardUseCase";
+import { ForecastModelInputs } from "../../core-layer/financial-forecast-module/tests/RunNestedModelTest";
 
 
 
@@ -52,7 +53,7 @@ export class ForecastModelController {
  }
 
  static async runModel(req: Request, res: Response){
-    const model = req.body as RollingForecastInputParams;
+    const model = req.body as ForecastModelInputs;
   
 
     try{
