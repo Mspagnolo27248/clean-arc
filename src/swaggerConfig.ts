@@ -1,5 +1,6 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import path from 'path';
+import { swaggerComponents } from './swaggerComponents';
 
 const options = {
     definition: {
@@ -11,11 +12,14 @@ const options = {
         },
         servers: [
             {
-                url: 'http://localhost:8000', // Change it based on your server configuration
+                url: 'http://localhost:8001', // Change it based on your server configuration
             },
         ],
+        components: {
+            schemas: swaggerComponents.components.schemas, // Integrate your schemas here
+          }
     },
-    apis: [path.join(__dirname, '../src/routes/*')], // Path to the API route files
+    apis: [path.join(__dirname, '../src/rest-api/routes/*')], // Path to the API route files
 };
 
 export const swaggerSpec = swaggerJsdoc(options);
