@@ -1,3 +1,4 @@
+
 import { ProductDto } from "../../../../core-layer/order-entry-module/data-transfer-objects/price-records-dtos";
 import { ARGModel, KeyField, TableColumn } from "../orm-decorators";
 import { ORM } from "../parent-class-orm";
@@ -12,7 +13,7 @@ export class ProductModel extends ORM implements ProductDto {
     productName: string = '';
 
     @TableColumn('TPCONO')
-    companyNumber: number = 0;
+    companyNumber: string = '';
 
     @TableColumn('TPIND8')
     inactiveDate: number = 0;
