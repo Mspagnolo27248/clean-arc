@@ -11,23 +11,24 @@ const getProductsUseCase = new GetProductUseCase(pricingRepository);
 
 
 export class ProductsController {
+    constructor(private getProductByIdUseCase:GetProductByIdUseCase,private getProductsUseCase:GetProductUseCase){}
 
-    static async getAll(req: Request, res: Response) {
+     async getAll(req: Request, res: Response) {
         try {
-            const products = await getProductsUseCase.execute();
+            const products = await this.getProductsUseCase.execute();
             return res.status(201).json(products)
         }
         catch (err) {
             return res.status(500).json({ message: "Error" });
-        }
+        }   
     }
 
 
-    static async getOne(req: Request, res: Response) {
+     async getOne(req: Request, res: Response) {
         try {
             const productID = req.params.id;
             if(!productID) throw new Error("Bad ID")
-            const products = await getProductByIdUseCase.execute(productID);
+            const products = await this.getProductByIdUseCase.execute(productID);
             return res.status(201).json(products)
         }
         catch (err) {
