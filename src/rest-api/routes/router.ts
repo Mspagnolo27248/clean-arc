@@ -9,7 +9,7 @@ import specialPriceRoutes from "./special-price.routes";
 
 
 
-const wireRoutes = () => {
+
 const router = Router();
 // ****define Resource endpoints root paths and the files that specify the http verb paths.***
 //Note Routes should be lowercase and kebab case*/
@@ -23,7 +23,6 @@ router.use('/special-price',specialPriceRoutes);
 router.use('/forecast-model',forecastModelRoutes);
 router.use('/products',productsRoutes);
 
-return router;
-}
+export default router;
 
-export default wireRoutes;
+

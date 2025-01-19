@@ -4,17 +4,15 @@ import  dotenv from "dotenv";
 import cors from 'cors';
 import { swaggerSpec } from './swaggerConfig'
 import swaggerUi from 'swagger-ui-express';
-import { container } from "./dependancy-registar/wire-di";
-import wireRoutes from "./rest-api/routes/router";
+import router from "./rest-api/routes/router";
+import { registerDependencies } from "./dependancy-registar/wire-di";
 
 
 
 dotenv.config();
 const app= express();
-container.register("Test",()=>{
-    return "Test";
-});
-const router = wireRoutes();
+
+registerDependencies();
 const port = process.env.PORT || 8001;
 app.use(cors());
 app.use('/api-docs', //http://localhost:8001/api-docs/
