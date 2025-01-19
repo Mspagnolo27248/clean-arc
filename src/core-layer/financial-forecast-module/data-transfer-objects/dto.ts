@@ -111,3 +111,41 @@ export interface OutputItems{
   BlendRequirements:number;
   EndingInventory:number;
 }
+
+
+
+export interface ProductDateKeys {
+  [ProductCode:string]:{
+      [Date:string]:
+      number;
+  };
+};
+
+export interface UnitProductDateKeys {
+  [Unit:string]:{
+       [ProductCode:string]:{
+          [Date:string]:number
+       }
+      }
+  };
+
+export type UnitYieldObject = {
+  [Unit: string]: {
+  [Charge_ProductCode: string]:{Output_ProductCode: string,OutputPercent: number}[];     
+  }
+  };
+
+export type ProductFormulationsObject = {
+  [ProductCode: string]: { ComponentCode: string, FormulaPercent: number }[];
+  };
+
+export interface ForecastModelInputs {
+  ModelMetaData: ModelMetaData;
+  ProductsForModelItem: ProductsForModelItem[],
+  Receipts:ProductDateKeys,
+  DailyOpenOrders:ProductDateKeys,
+  DailyDemandForecast:ProductDateKeys,
+  ProductFormulation:ProductFormulationsObject,
+  ScheduleItem:UnitProductDateKeys,
+  UnitYieldItem:UnitYieldObject;
+}

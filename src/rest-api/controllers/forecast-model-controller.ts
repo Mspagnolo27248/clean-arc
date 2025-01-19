@@ -1,11 +1,8 @@
 
 import { NextFunction, Request, Response } from "express";
-import { SaveForecastModelUseCase } from "../../core-layer/financial-forecast-module/use-cases/SaveForecastModelUseCase";
-import { ForecastModelRepositoryImp } from "../../core-layer/financial-forecast-module/data-access-repository/ForecastModelRepositoryImp";
-import { OpenExistingModelUseCase } from "../../core-layer/financial-forecast-module/use-cases/OpenExistingModelUseCase";
-import { RollingForecastInputParams } from "../../core-layer/financial-forecast-module/data-transfer-objects/dto";
+import { ForecastModelInputs, RollingForecastInputParams } from "../../core-layer/financial-forecast-module/data-transfer-objects/dto";
 import { CalcualteInventoryRollforwardUseCase } from "../../core-layer/financial-forecast-module/use-cases/CalculateInventoryRollforwardUseCase";
-import { ForecastModelInputs } from "../../core-layer/financial-forecast-module/tests/RunNestedModelTest";
+import { container } from "../../dependancy-registar/wire-di";
 
 
 
@@ -17,8 +14,7 @@ export class ForecastModelController {
     const payload = req.body as RollingForecastInputParams;
     payload.ModelMetaData.uid = uuid;
     try{
-        const ForecastModelRepository = new ForecastModelRepositoryImp('./data/json');
-        const saveForecastModelUseCase = new SaveForecastModelUseCase(ForecastModelRepository);
+        const saveForecastModelUseCase = container.resolve("SaveForecastModelUseCase");
         if (!payload || typeof payload !== 'object') {
             throw new Error('Error with payload and query params')    
         } 
@@ -35,8 +31,7 @@ export class ForecastModelController {
  static async loadModel(req: Request, res: Response){
     const filePath = req.params.id;
     try{
-        const ForecastModelRepository = new ForecastModelRepositoryImp('./data/json');
-        const openExistingModelUseCase = new OpenExistingModelUseCase(ForecastModelRepository);
+        const openExistingModelUseCase = container.resolve("OpenExistingModelUseCase");
         if (!filePath || typeof filePath !== 'string') {
             throw new Error('Error with query params')
           

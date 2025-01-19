@@ -1,15 +1,18 @@
 {
   "ModelMetaData": {
+    "createdDate": 20250101,
+    "lastUpdated": 2050118,
     "startDate": 20240112,
     "runDays": 31,
-    "uid": "1736342129071",
-    "id_description": "1736342129071 Test Model1 Nested"
+    "uid": "1737259528889",
+    "modelName": "Model2",
+    "id_description": "The Model 2 Desc"
   },
   "ProductsForModelItem": [
     {
       "ProductCode": "4107",
       "ProductDescription": "KENSOL 17                     ",
-      "TankCapacityGals": 273000,
+      "TankCapacityGals": 200000,
       "CurrentInventoryGals": 135849
     },
     {
