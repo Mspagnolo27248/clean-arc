@@ -9,5 +9,9 @@ export abstract class ForecastModelRepository {
  
      abstract saveModel(fileName: string, modelJson: RollingForecastInputParams): void;
      abstract importModel(fileName: string): RollingForecastInputParams;
+     abstract getListOfModels():any[]
  }
+
+
+ 
  

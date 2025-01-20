@@ -63,5 +63,20 @@ export class ForecastModelController {
  }
 
 
+ static async getModelNames(req: Request, res: Response){
+   const  repo = container.resolve("ForecastModelRepository")
+   
+   const models =  repo.getListOfModels();
+   const results = models.map(item=>item.split('.')[0])
+
+   try{
+
+return res.status(200).json(results) 
+}
+catch(error){
+    return res.status(500).json({ message: "Error" });
+}
+ }
+
 
 }

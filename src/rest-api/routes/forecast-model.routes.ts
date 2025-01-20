@@ -100,4 +100,6 @@ forecastModelRoutes.post("/load/:id", ForecastModelController.loadModel);
  */
 forecastModelRoutes.post("/run", ForecastModelController.runModel);
 
+forecastModelRoutes.get("/",ForecastModelController.getModelNames)
+
 export default forecastModelRoutes;
